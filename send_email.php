@@ -25,13 +25,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com'; // SMTP server
         $mail->SMTPAuth   = true;
-        $mail->Username   = 'trendtrovewebsite@gmail.com'; // SMTP username
-        $mail->Password   = 'vlbcymrdxxempmmc';    // SMTP password
+        $mail->Username   = ''; // SMTP username
+        $mail->Password   = '';    // SMTP password
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
 
         // Sender
-        $mail->setFrom('a.akrambasha123@gmail.com', 'A Akram Basha');
+        $mail->setFrom('', 'A Akram Basha');
 
         // Add each recipient email
         foreach ($emails as $email) {
