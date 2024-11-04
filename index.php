@@ -5,28 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Send Emails</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
-
-    <style>
-        .pill {
-            display: inline-block;
-            padding: 5px 10px;
-            background-color: #007bff;
-            color: white;
-            border-radius: 25px;
-            margin-right: 5px;
-            margin-bottom: 5px;
-        }
-        .pill .remove {
-            margin-left: 8px;
-            cursor: pointer;
-        }
-    </style>
 </head>
 <body>
 
 <div class="container">
     <h1>Send Resume</h1>
-    <form action="send_email.php" method="post" enctype="multipart/form-data">
+    <form id="emailForm" enctype="multipart/form-data">
         <div class="mb-3">
             <label for="subject" class="form-label">Subject:</label>
             <input type="text" class="form-control" id="subject" name="subject" required>
@@ -41,76 +25,48 @@
             <div id="email-list"></div>
         </div>
 
-        <input type="hidden" name="emails_hidden" id="emails_hidden">
-
-        <button type="submit" class="btn btn-primary">Send Email</button>
+        <button type="button" class="btn btn-primary" onclick="sendEmail()">Send Email</button>
     </form>
 </div>
 
 <script>
-    const emailInput = document.getElementById('emails');
-    const emailList = document.getElementById('email-list');
-    const emailsHidden = document.getElementById('emails_hidden');
-
     let emails = [];
 
-    // Function to handle pasting multiple emails
-    emailInput.addEventListener('paste', function (event) {
-        setTimeout(() => {
-            const pastedData = emailInput.value;
-            processEmails(pastedData);
-        }, 100); // Small delay to ensure pasted content is captured
-    });
-
-    emailInput.addEventListener('keydown', function (event) {
-        if (event.key === 'Enter') {
+    document.getElementById("emails").addEventListener("keydown", function(event) {
+        if (event.key === "Enter") {
             event.preventDefault();
-            const inputValue = emailInput.value.trim();
-            if (inputValue) {
-                processEmails(inputValue);
-                emailInput.value = '';
+            const email = event.target.value.trim();
+            if (email && !emails.includes(email)) {
+                emails.push(email);
+                displayEmails();
+                event.target.value = '';
             }
         }
     });
 
-    function processEmails(input) {
-        // Split input by commas or newlines and filter out empty values
-        const newEmails = input.split(/[\s,;]+/).filter(email => email);
-        newEmails.forEach(email => {
-            if (!emails.includes(email)) {
-                emails.push(email);
-            }
-        });
-        updateHiddenField();
-        displayEmails();
-    }
-
-    function addEmail(email) {
-        if (!emails.includes(email)) {
-            emails.push(email);
-            updateHiddenField();
-            displayEmails();
-        }
+    function displayEmails() {
+        const emailList = document.getElementById("email-list");
+        emailList.innerHTML = emails.map((email, index) =>
+            `<span class="badge bg-primary mx-1">${email} <a href="#" onclick="removeEmail(${index})">&times;</a></span>`
+        ).join('');
     }
 
     function removeEmail(index) {
         emails.splice(index, 1);
-        updateHiddenField();
         displayEmails();
     }
 
-    function updateHiddenField() {
-        emailsHidden.value = emails.join(',');
-    }
+    function sendEmail() {
+        const formData = new FormData(document.getElementById("emailForm"));
+        formData.append("emails", emails.join(","));
 
-    function displayEmails() {
-        emailList.innerHTML = '';
-        emails.forEach((email, index) => {
-            const pill = document.createElement('span');
-            pill.className = 'pill';
-            pill.innerHTML = email + ' <span class="remove" onclick="removeEmail(' + index + ')">&times;</span>';
-            emailList.appendChild(pill);
-        });
+        fetch("send_email.php", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.text())
+        .then(data => alert(data))
+        .catch(error => console.error("Error:", error));
     }
 </script>
 
